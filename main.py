@@ -18,6 +18,11 @@ class PopupDialog(QtGui.QDialog, projectsettings.Ui_Dialog):
 	super(PopupDialog, self).__init__(parent)
 	self.setupUi(self)
 
+class ErrorDialog(QtGui.QErrorMessage):
+    def __init__(self, parent=None):
+	super(ErrorDialog, self).__init__(parent)
+	self.setupUi(self)
+
 class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
     def __init__(self, parent=None):
 	super(ExampleApp, self).__init__(parent)
@@ -28,16 +33,55 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.ax1f1 = self.fig1.add_subplot(111)
 	print "Initializing..."    
 	self.actionProject_Settings.triggered.connect(self.openDialog)
+	self.dialog = PopupDialog()
+	self.dialog.pushButton.clicked.connect(self.selectFile)
+	self.dialog.buttonBox.accepted.connect(self.save_data)
 
     def openDialog(self):
 	print "Opening dialog box"
-	self.dialog = PopupDialog()
 	self.dialog.exec_()
-	print "Setup Ui"
-	
+
+    def selectFile(self):
+	print "Selecting file..."
+	self.dialog.lineEdit_4.setText(QtGui.QFileDialog.getOpenFileName())
 
     def save_data(self):
 	print "Saving data..."
+	self.fileName = self.dialog.lineEdit.text()
+	self.logRate = self.dialog.lineEdit_2.text()
+	self.logDuration = self.dialog.lineEdit_3.text()
+	self.filePath = self.dialog.lineEdit_4.text()
+	print "Filename: " + self.fileName
+	print "Log rate: " + self.logRate
+	print "Log duration: " + self.logDuration
+	print "File path: " + self.filePath
+	if not self.checkData():
+	    print "Data invalid"
+
+    def checkData(self):
+	flag = True
+	print "In check data"
+	self.errorStr = ""
+	if not self.fileName:
+	    self.errorStr += "Enter a file name!"
+	    flag = False
+	'''if not self.logRate.isdigit():
+	    errorStr += "Enter a number for sample rate!"
+	    flag = False
+	if not self.logDuration.isdigit():
+	    errorStr += "Enter a number for log duration!"
+	    flag = False'''
+	if flag is False:
+	    #QtGui.QErrorMessage.showMessage(errorStr)
+	    self.show_saveDataError()
+	    return False
+	else:
+	    return True
+    
+    def show_saveDataError(self):
+	error = QtGui.QErrorMessage()
+	error.showMessage(self.errorStr)
+	error.exec_()
 
     def addmpl(self, fig):
 	self.canvas = FigureCanvas(fig)
@@ -46,6 +90,7 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 
     def read(self):
 	print "Reading serial"
+	#replace this line with code to do readouts
 	reading = random.random()
 	self.lcdNumber.display(reading)
 	self.startButton.setText("Stop")
