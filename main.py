@@ -43,7 +43,7 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 
     def selectFile(self):
 	print "Selecting file..."
-	self.dialog.lineEdit_4.setText(QtGui.QFileDialog.getOpenFileName())
+	self.dialog.lineEdit_4.setText(QtGui.QFileDialog.getExistingDirectory(self, "Select Directory"))
 
     def save_data(self):
 	print "Saving data..."
@@ -63,16 +63,15 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	print "In check data"
 	self.errorStr = ""
 	if not self.fileName:
-	    self.errorStr += "Enter a file name!"
+	    self.errorStr += "Enter a file name!\n"
 	    flag = False
-	'''if not self.logRate.isdigit():
-	    errorStr += "Enter a number for sample rate!"
+	if not repr(self.logRate).isdigit():
+	    self.errorStr += "Enter a number for sample rate!\n"
 	    flag = False
-	if not self.logDuration.isdigit():
-	    errorStr += "Enter a number for log duration!"
-	    flag = False'''
+	if not repr(self.logDuration).isdigit():
+	    self.errorStr += "Enter a number for log duration!\n"
+	    flag = False
 	if flag is False:
-	    #QtGui.QErrorMessage.showMessage(errorStr)
 	    self.show_saveDataError()
 	    return False
 	else:

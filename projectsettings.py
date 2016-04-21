@@ -101,5 +101,5 @@ class Ui_Dialog(object):
         self.label_6.setText(_translate("Dialog", "s", None))
         self.label_3.setText(_translate("Dialog", "Enter log duration (s):", None))
         self.label.setText(_translate("Dialog", "Enter name of .csv file:", None))
-        self.pushButton.setText(_translate("Dialog", "PushButton", None))
+        self.pushButton.setText(_translate("Dialog", "Select Destination Folder", None))
 
