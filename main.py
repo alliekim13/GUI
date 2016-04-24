@@ -5,6 +5,7 @@ import design2
 import projectsettings
 import os
 import random
+import time
 from PyQt4.uic import loadUiType
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt4agg import (
@@ -28,7 +29,7 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	super(ExampleApp, self).__init__(parent)
 	self.setupUi(self)
 	self.actionNew.triggered.connect(self.new_project)
-	self.startButton.clicked.connect(self.read)
+	self.startButton.clicked.connect(self.start_log)
 	self.fig1 =Figure()
 	self.ax1f1 = self.fig1.add_subplot(111)
 	print "Initializing..."    
@@ -36,7 +37,9 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.dialog = PopupDialog()
 	self.dialog.pushButton.clicked.connect(self.selectFile)
 	self.dialog.buttonBox.accepted.connect(self.save_data)
-
+	self.timer = QTimer()
+	self.timer.timeout.connect(self.read)
+	self.buttonState = False
     def openDialog(self):
 	print "Opening dialog box"
 	self.dialog.exec_()
@@ -65,10 +68,12 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	if not self.fileName:
 	    self.errorStr += "Enter a file name!\n"
 	    flag = False
-	if not repr(self.logRate).isdigit():
+	if not isNumber(repr(self.logRate)):
+	    print "Log rate invalid\n"
 	    self.errorStr += "Enter a number for sample rate!\n"
 	    flag = False
-	if not repr(self.logDuration).isdigit():
+	if not self.isNumber(repr(self.logDuration)):
+	    print "Log duration invalid\n"
 	    self.errorStr += "Enter a number for log duration!\n"
 	    flag = False
 	if flag is False:
@@ -76,7 +81,7 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	    return False
 	else:
 	    return True
-    
+
     def show_saveDataError(self):
 	error = QtGui.QErrorMessage()
 	error.showMessage(self.errorStr)
@@ -87,12 +92,23 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.mplvl.addWidget(self.canvas)
 	self.canvas.draw()
 
+    def start_log(self):
+	if self.buttonState is False:
+	    self.timer.start(100)
+	    self.startButton.setText("Stop")
+	    self.buttonState = True
+	else:
+	    self.timer.stop()
+	    print "Stop!"
+	    self.buttonState = False
+	    self.startButton.setText("Start")
+
     def read(self):
-	print "Reading serial"
 	#replace this line with code to do readouts
 	reading = random.random()
+	print reading
 	self.lcdNumber.display(reading)
-	self.startButton.setText("Stop")
+	#self.startButton.setText("Stop")
 
     def get_value(self):
 	#this function will get the values of the readings 
@@ -107,7 +123,13 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	if directory:
 	    for file_name in os.listdir(directory):
 		self.listWidget.addItem(file_name)
-   
+
+def isNumber(teststr):
+    try:
+	float(teststr)
+    except ValueError:
+	return False
+    return True
 
 def main():
     app = QtGui.QApplication(sys.argv)
