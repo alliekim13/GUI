@@ -41,8 +41,8 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.timer = QTimer()
 	self.timer.timeout.connect(self.read)
 	self.buttonState = False
-	#self.addmpl(self.fig1)
-
+	self.addmpl(self.fig1)
+	self.rdgList = ""
     def openDialog(self):
 	print "Opening dialog box"
 	self.dialog.exec_()
@@ -66,7 +66,7 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.fileName += ".csv"
 	self.outputFilepath = os.path.join(str(self.filePath), str(self.fileName))
 	print self.outputFilepath
-
+	
     def checkData(self):
 	flag = True
 	print "In check data"
@@ -113,9 +113,11 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	    self.startButton.setText("Start")
 
     def read(self):
+	#function that gets called when qtimer expires
 	#replace this line with code to do readouts
 	reading = random.random()
 	print reading
+	self.dataloglist.addItem(str(reading))
 	self.lcdNumber.display(reading)
 	#self.startButton.setText("Stop")
 
