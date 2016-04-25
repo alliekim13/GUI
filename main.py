@@ -32,6 +32,7 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.startButton.clicked.connect(self.start_log)
 	self.fig1 =Figure()
 	self.ax1f1 = self.fig1.add_subplot(111)
+	self.ax1f1.plot(np.random.rand(100))
 	print "Initializing..."    
 	self.actionProject_Settings.triggered.connect(self.openDialog)
 	self.dialog = PopupDialog()
@@ -40,6 +41,8 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.timer = QTimer()
 	self.timer.timeout.connect(self.read)
 	self.buttonState = False
+	#self.addmpl(self.fig1)
+
     def openDialog(self):
 	print "Opening dialog box"
 	self.dialog.exec_()
@@ -60,6 +63,9 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	print "File path: " + self.filePath
 	if not self.checkData():
 	    print "Data invalid"
+	self.fileName += ".csv"
+	self.outputFilepath = os.path.join(str(self.filePath), str(self.fileName))
+	print self.outputFilepath
 
     def checkData(self):
 	flag = True
@@ -68,11 +74,14 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	if not self.fileName:
 	    self.errorStr += "Enter a file name!\n"
 	    flag = False
-	if not isNumber(repr(self.logRate)):
+	if not self.filePath:
+	    self.errorStr += "Enter a file path!\n"
+	    flag = False
+	if not self.isNumber(str(self.logRate)):
 	    print "Log rate invalid\n"
 	    self.errorStr += "Enter a number for sample rate!\n"
 	    flag = False
-	if not self.isNumber(repr(self.logDuration)):
+	if not self.isNumber(str(self.logDuration)):
 	    print "Log duration invalid\n"
 	    self.errorStr += "Enter a number for log duration!\n"
 	    flag = False
@@ -110,10 +119,6 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.lcdNumber.display(reading)
 	#self.startButton.setText("Stop")
 
-    def get_value(self):
-	#this function will get the values of the readings 
-	print "Getting values"
-
     def new_project(self):
 	print "Start a new project"
 
@@ -124,12 +129,12 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	    for file_name in os.listdir(directory):
 		self.listWidget.addItem(file_name)
 
-def isNumber(teststr):
-    try:
-	float(teststr)
-    except ValueError:
-	return False
-    return True
+    def isNumber(self, teststr):
+	try:
+	    float(teststr)
+	except ValueError:
+	    return False
+	return True
 
 def main():
     app = QtGui.QApplication(sys.argv)
