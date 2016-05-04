@@ -1,7 +1,9 @@
 from PyQt4.QtCore import *
 from PyQt4 import QtGui
-import sys
+import csv
+import datetime
 import design2
+import sys
 import projectsettings
 import os
 import random
@@ -37,12 +39,15 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.actionProject_Settings.triggered.connect(self.openDialog)
 	self.dialog = PopupDialog()
 	self.dialog.pushButton.clicked.connect(self.selectFile)
-	self.dialog.buttonBox.accepted.connect(self.save_data)
+	self.dialog.buttonBox.accepted.connect(self.save_settings)
 	self.timer = QTimer()
+	self.logTimer = QTimer()
 	self.timer.timeout.connect(self.read)
+	self.logTimer.timeout.connect(self.logEnd)
 	self.buttonState = False
 	self.addmpl(self.fig1)
-	self.rdgList = ""
+	self.logValid = False
+
     def openDialog(self):
 	print "Opening dialog box"
 	self.dialog.exec_()
@@ -51,22 +56,34 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	print "Selecting file..."
 	self.dialog.lineEdit_4.setText(QtGui.QFileDialog.getExistingDirectory(self, "Select Directory"))
 
-    def save_data(self):
+    def save_settings(self):
 	print "Saving data..."
 	self.fileName = self.dialog.lineEdit.text()
+	self.fileName += ".csv"
 	self.logRate = self.dialog.lineEdit_2.text()
 	self.logDuration = self.dialog.lineEdit_3.text()
 	self.filePath = self.dialog.lineEdit_4.text()
+	if not self.checkData():
+	    print "Data invalid"
+	    self.logValid = False
+	    self.fileName = ""
+	    self.logRate = ""
+	    self.logRate = ""
+	    self.logDuration = ""
+	    self.filePath = ""
+	    self.show_saveSettingsError()
+	else:
+	    self.logValid = True
+	    self.outputFilepath = os.path.join(str(self.filePath), str(self.fileName))
+	    print self.outputFilepath
+	self.debug_settings()
+    
+    def debug_settings(self):
 	print "Filename: " + self.fileName
 	print "Log rate: " + self.logRate
 	print "Log duration: " + self.logDuration
 	print "File path: " + self.filePath
-	if not self.checkData():
-	    print "Data invalid"
-	self.fileName += ".csv"
-	self.outputFilepath = os.path.join(str(self.filePath), str(self.fileName))
-	print self.outputFilepath
-	
+    
     def checkData(self):
 	flag = True
 	print "In check data"
@@ -85,13 +102,9 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	    print "Log duration invalid\n"
 	    self.errorStr += "Enter a number for log duration!\n"
 	    flag = False
-	if flag is False:
-	    self.show_saveDataError()
-	    return False
-	else:
-	    return True
+	return flag
 
-    def show_saveDataError(self):
+    def show_saveSettingsError(self):
 	error = QtGui.QErrorMessage()
 	error.showMessage(self.errorStr)
 	error.exec_()
@@ -100,26 +113,51 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	self.canvas = FigureCanvas(fig)
 	self.mplvl.addWidget(self.canvas)
 	self.canvas.draw()
-
+ 
     def start_log(self):
-	if self.buttonState is False:
-	    self.timer.start(100)
-	    self.startButton.setText("Stop")
-	    self.buttonState = True
-	else:
-	    self.timer.stop()
-	    print "Stop!"
-	    self.buttonState = False
-	    self.startButton.setText("Start")
+	#controls logging using timer
+	self.start_time = datetime.datetime.now()
+	#enter logging rate in this statement
+	self.timer.start(100)
+	self.logTimer.start(int(self.logDuration)*1000)
+	self.startButton.setText("Stop")
+	#diff = datetime.datetime.now()-datetime.datetime.now()
+	#while diff.total_seconds() < self.logDuration:
+	#print "Stopping!"
+	#diff = datetime.datetime.now() - self.start_time
+	#print diff
+	    #code below controls logging using button
+	#if 1: #self.buttonState is False:
+		#self.timer.start(100)  #replace 100 with self.logRate in milliseconds
+	#self.startButton.setText("Stop")
+	self.buttonState = True
+	    #else:
+		#self.timer.stop()
+	    #self.startButton.setText("Start")
+
+    def logEnd(self):
+	self.timer.stop()
 
     def read(self):
 	#function that gets called when qtimer expires
 	#replace this line with code to do readouts
 	reading = random.random()
 	print reading
+	self.lcdNumber_2.display(reading)
 	self.dataloglist.addItem(str(reading))
-	self.lcdNumber.display(reading)
-	#self.startButton.setText("Stop")
+	dt = datetime.datetime.now()
+	dt.strftime("%Y-%m-%d %H:%M:%S.%f")
+	row = [dt, reading]
+	with open (str(self.outputFilepath), 'a') as f:
+	    writer = csv.writer(f)
+	    writer.writerow(row)
+	f.close()
+	'''
+	except:
+	    print ValueError
+	    print "Need a valid file path!"
+	'''
+	#self.timer.start(100)
 
     def new_project(self):
 	print "Start a new project"
