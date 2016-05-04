@@ -110,33 +110,34 @@ class ExampleApp(QtGui.QMainWindow, design2.Ui_MainWindow):
 	error.exec_()
 
     def addmpl(self, fig):
+	#print self.outputFilepath
 	self.canvas = FigureCanvas(fig)
 	self.mplvl.addWidget(self.canvas)
 	self.canvas.draw()
  
     def start_log(self):
+	if self.buttonState is False:
+	    self.buttonState = True
+	    self.startButton.setText("Stop")
+	    self.timer.start(int(self.logRate)*1000)
+	    self.logTimer.start(int(self.logDuration)*1000)
+	elif self.buttonState is True:
+	    self.buttonState = False
+	    self.startButton.setText("Start")
+	    self.timer.stop()
+	    self.logTimer.stop()
+	'''
 	#controls logging using timer
 	self.start_time = datetime.datetime.now()
 	#enter logging rate in this statement
-	self.timer.start(100)
+	self.timer.start(int(self.logRate)*1000)
 	self.logTimer.start(int(self.logDuration)*1000)
-	self.startButton.setText("Stop")
-	#diff = datetime.datetime.now()-datetime.datetime.now()
-	#while diff.total_seconds() < self.logDuration:
-	#print "Stopping!"
-	#diff = datetime.datetime.now() - self.start_time
-	#print diff
-	    #code below controls logging using button
-	#if 1: #self.buttonState is False:
-		#self.timer.start(100)  #replace 100 with self.logRate in milliseconds
-	#self.startButton.setText("Stop")
-	self.buttonState = True
-	    #else:
-		#self.timer.stop()
-	    #self.startButton.setText("Start")
+	'''
 
     def logEnd(self):
 	self.timer.stop()
+	self.buttonState = False
+	self.startButton.setText("Start")
 
     def read(self):
 	#function that gets called when qtimer expires
